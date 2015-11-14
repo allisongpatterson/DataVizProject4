@@ -1,1 +1,6 @@
 data/
+makedb.py
+.DS_Store
+*~
+mortality.db
+dev/
