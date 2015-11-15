@@ -107,6 +107,10 @@ def pullData ():
     
 @get("/data")
 def data ():
+    return pullData()
+
+@get("/test")
+def test ():
     mass=pullData()
     return template('data.html',{'firstq':mass["data_avg_age"],'secondq':mass['data_death_age']})
 
