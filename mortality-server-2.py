@@ -54,7 +54,14 @@ def pullData ():
                         "year": int(year)} for (cause, age, year) in cur.fetchall()]
         
 
-
+        cur.execute("""SELECT s.age_value, s.year, Cause_Recode_39, max(s.occur) 
+                    FROM 
+                    (SELECT age_value, Cause_Recode_39,count(*) as occur, year 
+                    FROM mortality GROUP BY age_value, year, Cause_Recode_39) 
+                    AS s GROUP BY s.age_value, year;""")
+        data_death_age=[{"age": int(age),
+                        "year": int(year),
+                        "cause": int(cause)} for (age, year, cause,number) in cur.fetchall()]
         #####For each age, the top cause of death (as per the Cause_Record_39)
         #####for deaths at that age, for each year.
 
@@ -81,7 +88,7 @@ def pullData ():
         conn.close()
 
 
-        return   {"data":data_avg_age}
+        return   {"data_avg_age":data_avg_age, "data_death_age": data_death_age}
         #{"data_avg_age":data_avg_age}
         #{"data":data, 
               
