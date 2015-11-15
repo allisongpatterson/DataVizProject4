@@ -13,7 +13,7 @@
 #
 
 
-from bottle import get, post, run, request, static_file, redirect
+from bottle import get, post, run, request, static_file, redirect, template
 import os
 import sys
 import sqlite3
@@ -107,7 +107,8 @@ def pullData ():
     
 @get("/data")
 def data ():
-    return pullData()
+    mass=pullData()
+    return template('data.html',{'firstq':mass["data_avg_age"],'secondq':mass['data_death_age']})
 
     
 @get('/<name>')
