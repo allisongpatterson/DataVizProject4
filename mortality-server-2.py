@@ -13,7 +13,7 @@
 #
 
 
-from bottle import get, post, run, request, static_file, redirect, template
+from bottle import route, get, post, run, request, static_file, redirect, template
 import os
 import sys
 import sqlite3
@@ -28,7 +28,7 @@ MORTALITYDB = "mortality.db"
 
 
 
-def pullData ():
+def pullDataQ1 ():
     conn = sqlite3.connect(MORTALITYDB)
     cur = conn.cursor()
 
@@ -102,16 +102,48 @@ def pullData ():
         raise
 
 
+def pullDataQ2 ():
+    conn = sqlite3.connect(MORTALITYDB)
+    cur = conn.cursor()
+
+    try: 
+
+        #for the stream graph
+        #select age_value, count(age_value),year, Cause_Recode_39 from mortality group by Cause_Recode_39, age_value, year;select age_value, count(age_value),year, Cause_Recode_39 from mortality group by Cause_Recode_39, age_value, year;
+        cur.execute("""SELECT age_value, count(age_value),year, Cause_Recode_39 
+            FROM mortality 
+            GROUP BY Cause_Recode_39, age_value, year;""")
+        data = [{"age":int(age),
+                 "number":int(number),
+                 "year":int(year),
+                 "cause":int(cause)} for (age, number, year, cause,) in  cur.fetchall()]
+        conn.close()
+
+  #      causes = list(set([int(r["cause"]) for r in data]))
+  #      genders = list(set([r["gender"] for r in data]))
+
+        return {"data":data}
+
+    except: 
+        print "ERROR!!!"
+        conn.close()
+        raise
+
         
-# get all data
-    
+# # get all data
+# @get('/data')
+# def data ():
+#     data = pullDataQ2()
+#     return template('project4.html',{'data': data})
+#    # return pullDataQ2()
+
 @get("/data")
 def data ():
-    return pullData()
+    return pullDataQ2()
 
 @get("/test")
 def test ():
-    mass=pullData()
+    mass=pullDataQ1()
     return template('data.html',{'firstq':mass["data_avg_age"],'secondq':mass['data_death_age']})
 
     
