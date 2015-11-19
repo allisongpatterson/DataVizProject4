@@ -2,5 +2,5 @@ data/
 makedb.py
 .DS_Store
 *~
-mortality.db
+mortality.db*
 dev/
