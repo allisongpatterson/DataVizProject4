@@ -10,7 +10,10 @@ var GLOBAL={"data":"",
 "months":[1,2,3,4,5,6,7,8,9,10,11,12],
 "years":[2003, 2008, 2013],
 "selected_causes":[],
-"totals":[]};
+"totals":[],
+"maxval":0}; //currently totalval is used so that you can turn it into a percent. 
+
+
 function run () {
 var svg = d3.selectAll("svg");
 svg.append("text")
@@ -33,10 +36,9 @@ updateCausesView();
 */
 function sum_Total_Months()
 {
-
 GLOBAL.data.forEach(function(r) //for each row in the data
 {
-
+console.log(r.cause);
 if (GLOBAL.selected_causes.length==0){ //take it as taking the totals of all causes
 if (r.month in GLOBAL.totals){ //if it is, just update
 
@@ -47,18 +49,36 @@ GLOBAL.totals[r["month"]]={"month":r["month"],"number":r["number"]}; // month: n
 
 }
 
-}
+} else {
 // If the country of the data row is the desired country
-else if (GLOBAL.selected_causes.indexOf(r.cause)>-1) //if it is in selected countries
+if (GLOBAL.selected_causes.indexOf(r.cause.toString())!=-1) //if it is in selected countries
 {
-if (!GLOBAL.totals.indexOf(r["month"])){ //if that month isn't in the total
-GLOBAL.totals[r["month"]]=r["number"];
-} else { //if it is, just update
-GLOBAL.totals[r["month"]]=GLOBAL.totals[r["month"]]+r["number"];
+	console.log(r.cause);
+if (r.month in GLOBAL.totals){ //if it is, just update
+
+GLOBAL.totals[r["month"]]={"month":r["month"],"number":GLOBAL.totals[r["month"]]["number"]+r["number"]}
+
+} else { //if that month isn't in the total
+GLOBAL.totals[r["month"]]={"month":r["month"],"number":r["number"]}; // month: number
+
+}
+
 }
 }
+
 });
+
+GLOBAL.maxval=0;
+for (val in GLOBAL.totals){
+	if (GLOBAL.maxval<GLOBAL.totals[val]["number"]){
+		GLOBAL.maxval=GLOBAL.totals[val]["number"];
+	}
+}
 return GLOBAL.totals
+}
+
+function updateCausesView(){
+createCausesView(sum_Total_Months());
 }
 
 /* Checks whenever a checkbox has been clicked
@@ -66,7 +86,7 @@ return GLOBAL.totals
 */
 function check_changed()
 {
-
+console.log("present");
     var svg = d3.select("#viz-age");
 svg.selectAll("*").remove(); //clears the viz
 // Reset the list of selected countries
@@ -74,20 +94,23 @@ svg.selectAll("*").remove(); //clears the viz
 GLOBAL.totals=[];
 
 // Fill the list up with all countries that are checked
-for (cause_index in GLOBAL.causes)
+for (cause_index in GLOBAL.cause)
 {
-var cause = GLOBAL.causes[cause_index]
-if (document.getElementById(cause_index).checked === true)
+var cause = GLOBAL.cause[cause_index]; //this gets the string version
+console.log("cause is"+cause);
+if (document.getElementById(cause_index).checked === true && GLOBAL.selected_causes.indexOf(cause_index)==-1) //if checked and not in list
 {
-GLOBAL.selected_causes.push(cause);
+GLOBAL.selected_causes.push(cause_index);
+} else { //if it has already been checked before
+	var index = GLOBAL.selected_causes.indexOf(cause_index);
+	if (index>-1){
+	GLOBAL.selected_causes.splice(index,1);}
 }
 }
 // Update the visualization
 updateCausesView();
 }
-function updateCausesView(){
-createCausesView(sum_Total_Months());
-}
+
 /*
 * Create a simple visual representation
 * of the data
@@ -95,14 +118,6 @@ createCausesView(sum_Total_Months());
 */
 function createCausesView() {
 var svg = d3.select("#viz-age");
-svg.append("text")
-.attr("x",+svg.attr("width")/2)
-.attr("y",20)
-.attr("dy","0.35em")
-.style("text-anchor","middle")
-.style("font-family","sans-serif")
-.style("font-size","20pt")
-.text("Causes of Death");
 
 var vis = svg,
 WIDTH = 1000,
@@ -111,10 +126,10 @@ MARGINS = {
 top: 20,
 right: 20,
 bottom: 20,
-left: 50
+left: 100
 },
 xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, 24]),
-yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([100000, 250000]),
+yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0, GLOBAL.maxval]),
 xAxis = d3.svg.axis()
 .scale(xScale),
 yAxis = d3.svg.axis()
@@ -130,6 +145,7 @@ return xScale(d.month);
 })
 .y(function(d) {
 console.log(d.number);
+//var value=d.number/GLOBAL.totalval*100;
 return yScale(d.number);
 });
 
