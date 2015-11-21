@@ -62,44 +62,19 @@ def pullDataQ1 ():
         data_death_age=[{"age": int(age),
                         "year": int(year),
                         "cause": int(cause)} for (age, year, cause,number) in cur.fetchall()]
-        #####For each age, the top cause of death (as per the Cause_Record_39)
-        #####for deaths at that age, for each year.
-
-
-#karina: what is this for? 
-       # causes = list(set([int(r["cause"]) for r in data]))
-#        genders = list(set([r["gender"] for r in data]))
-
-        # averages= {}
-        # for i in data:  #keeps track of how many and total to find average later
-        #     if (i['cause'] not in averages):
-        #         averages[i['cause']]=(i['age'],1)
-        #     else:
-        #         agetuple= averages[i['cause']]
-        #         agetuple= (agetuple[0]+i['age'],agetuple[1]+1)
-        #         averages[i['cause']]=agetuple
-        # for a in averages.keys():
-        #     average = averages[a][0]/averages[a][1]
-        #     averages[a]=average
-        
-
-
 
         conn.close()
 
 
         return   {"data_avg_age":data_avg_age, "data_death_age": data_death_age}
-        #{"data_avg_age":data_avg_age}
-        #{"data":data, 
-              
-               # "data_top_cause":data_top_cause}
-               # "genders":genders,
-              #  "causes":causes}
+        
 
     except: 
         print "ERROR!!!"
         conn.close()
         raise
+
+
 
 
 def pullDataQ2 ():
@@ -108,21 +83,41 @@ def pullDataQ2 ():
 
     try: 
 
-        #for the stream graph
-        #select age_value, count(age_value),year, Cause_Recode_39 from mortality group by Cause_Recode_39, age_value, year;select age_value, count(age_value),year, Cause_Recode_39 from mortality group by Cause_Recode_39, age_value, year;
-        cur.execute("""SELECT age_value, count(age_value),year, Cause_Recode_39 
+        #select Month_Of_Death, count(Month_Of_Death),year, Cause_Recode_39 from mortality group by Cause_Recode_39, Month_Of_Death, year order by Month_Of_Death;
+        cur.execute("""SELECT Month_Of_Death, count(Month_Of_Death),Cause_Recode_39, year
             FROM mortality 
-            GROUP BY Cause_Recode_39, age_value, year;""")
-        data = [{"age":int(age),
+            GROUP BY Cause_Recode_39, Month_Of_Death, year 
+            ORDER BY Month_Of_Death;""")
+
+        data = [{"month":int(month[1:]),
                  "number":int(number),
-                 "year":int(year),
-                 "cause":int(cause)} for (age, number, year, cause,) in  cur.fetchall()]
+                 "cause": int(cause),
+                 "year":int(year)} for (month, number, cause, year,) in  cur.fetchall()]
+       
         conn.close()
 
-  #      causes = list(set([int(r["cause"]) for r in data]))
-  #      genders = list(set([r["gender"] for r in data]))
+        month = list(set([int(r["month"]) for r in data]))
+        year = list(set([r["year"] for r in data]))
+        cause = list(set([r["cause"] for r in data]))
+        # data2=[];
+        # #consolidate the dictionary on the months
+        # element=0;
+        # for n in data:
+        #     months = list(set([int(r["month"]) for r in data2]))
+        #     values = list(set([int(r["number"]) for r in data2]))
+        #     print values
+        #     if (n["month"] not in months):
 
-        return {"data":data}
+        #         data2.insert(element,n) #at this index
+        #         element+=1
+        #     else:
+        #         print "updating"
+        #         print n
+        #         currentDict=data2[n["month"]-1]
+        #         currentDict["number"]+=n["number"]
+        #         data2[n["month"]-1]=currentDict
+
+        return {"data":data, "month":month, "year":year, "causes":cause}
 
     except: 
         print "ERROR!!!"
