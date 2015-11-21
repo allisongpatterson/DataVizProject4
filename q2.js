@@ -10,7 +10,7 @@ var GLOBAL={"data":"",
 "months":[1,2,3,4,5,6,7,8,9,10,11,12],
 "years":[2003, 2008, 2013],
 "selected_causes":[],
-"totals":[],
+"totals":{"2003":[],"2008":[],"2013":[]},
 "maxval":0}; //currently totalval is used so that you can turn it into a percent. 
 
 
@@ -40,12 +40,12 @@ GLOBAL.data.forEach(function(r) //for each row in the data
 {
 console.log(r.cause);
 if (GLOBAL.selected_causes.length==0){ //take it as taking the totals of all causes
-if (r.month in GLOBAL.totals){ //if it is, just update
+if (r.month in GLOBAL.totals[r.year]){ //if it is, just update
 
-GLOBAL.totals[r["month"]]={"month":r["month"],"number":GLOBAL.totals[r["month"]]["number"]+r["number"]}
+GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":GLOBAL.totals[r.year][r["month"]]["number"]+r["number"]}
 
 } else { //if that month isn't in the total
-GLOBAL.totals[r["month"]]={"month":r["month"],"number":r["number"]}; // month: number
+GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":r["number"]}; // month: number
 
 }
 
@@ -54,12 +54,12 @@ GLOBAL.totals[r["month"]]={"month":r["month"],"number":r["number"]}; // month: n
 if (GLOBAL.selected_causes.indexOf(r.cause.toString())!=-1) //if it is in selected countries
 {
 	console.log(r.cause);
-if (r.month in GLOBAL.totals){ //if it is, just update
+if (r.month in GLOBAL.totals[r.year]){ //if it is, just update
 
-GLOBAL.totals[r["month"]]={"month":r["month"],"number":GLOBAL.totals[r["month"]]["number"]+r["number"]}
+GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":GLOBAL.totals[r.year][r["month"]]["number"]+r["number"]}
 
 } else { //if that month isn't in the total
-GLOBAL.totals[r["month"]]={"month":r["month"],"number":r["number"]}; // month: number
+GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":r["number"]}; // month: number
 
 }
 
@@ -69,9 +69,9 @@ GLOBAL.totals[r["month"]]={"month":r["month"],"number":r["number"]}; // month: n
 });
 
 GLOBAL.maxval=0;
-for (val in GLOBAL.totals){
-	if (GLOBAL.maxval<GLOBAL.totals[val]["number"]){
-		GLOBAL.maxval=GLOBAL.totals[val]["number"];
+for (val in GLOBAL.totals["2003"]){
+	if (GLOBAL.maxval<GLOBAL.totals["2003"][val]["number"]){
+		GLOBAL.maxval=GLOBAL.totals["2003"][val]["number"];
 	}
 }
 return GLOBAL.totals
@@ -91,7 +91,7 @@ console.log("present");
 svg.selectAll("*").remove(); //clears the viz
 // Reset the list of selected countries
 
-GLOBAL.totals=[];
+GLOBAL.totals={"2003":[],"2008":[],"2013":[]}; //reset
 
 // Fill the list up with all countries that are checked
 for (cause_index in GLOBAL.cause)
@@ -136,7 +136,6 @@ yAxis = d3.svg.axis()
 .scale(yScale)
 .orient("left");
 
-console.log("Reached");
 
 
 var line = d3.svg.line()
@@ -149,11 +148,25 @@ console.log(d.number);
 return yScale(d.number);
 });
 
+var colors = ["blue","red","yellow","green","black","blue","gray"];
+for (total in GLOBAL.totals){console.log(GLOBAL.totals[total]);}
+for (total in GLOBAL.totals){ //err we are going to try for looping through
+
 var simpler=[]; //the other array of GLOBALS.total had the month in it for easier updating...
-GLOBAL.totals.forEach(function(r){
-simpler.push(r); //we'll just use this :')
-})
-console.log(simpler);
+
+simpler.push(GLOBAL.totals[total]);
+// GLOBAL.totals[total].forEach(function(r){
+// simpler.push(r); //we'll just use this :')
+// })
+
+
+var tryagain=[];
+
+for (each in simpler[0]){
+	tryagain.push(simpler[0][each]);
+}
+console.log("tryagain: "+tryagain);
+console.log(simpler[0]);
 vis.append("svg:g")
 .attr("class", "x axis")
 .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
@@ -162,17 +175,16 @@ vis.append("svg:g")
 .attr("class", "y axis")
 .attr("transform", "translate(" + (MARGINS.left) + ",0)")
 .call(yAxis);
-vis.append("svg:path").attr("d", line(simpler));
+vis.append("svg:path")
+	.attr("d", line(tryagain))
+	   .attr("stroke-width", "2")
+	   .attr("stroke","blue");
 
 }
-/*
-* Move a DOM element to the front
-*
-*/
-function moveToFront (node) {
-var parent = node.parentNode;
-parent.appendChild(node);
+
+d3.selectAll(".axis").attr("stroke","black");
 }
+
 
 /*
 * Convert a cause code to text
