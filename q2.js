@@ -89,90 +89,76 @@ function check_changed() {
 }
 
 /*
-* Create a simple visual representation
-* of the data
-*
+* Create a simple visual representation of the data
 */
+
 function createCausesView() {
 	GLOBAL.maxval=0; //reset
-GLOBAL.minval=100000000;
+	GLOBAL.minval=100000000;
 
-for (y in GLOBAL.years){ //for each year
-for (val in GLOBAL.totals[GLOBAL.years[y]]){ //for each month in each year
-	
-	if (GLOBAL.maxval<GLOBAL.totals[GLOBAL.years[y]][val]["number"]){ //find the highest death value
-		GLOBAL.maxval=GLOBAL.totals[GLOBAL.years[y]][val]["number"];
+	for (y in GLOBAL.years){ //for each year
+		for (val in GLOBAL.totals[GLOBAL.years[y]]){ //for each month in each year
+			if (GLOBAL.maxval<GLOBAL.totals[GLOBAL.years[y]][val]["number"]){ //find the highest death value
+				GLOBAL.maxval=GLOBAL.totals[GLOBAL.years[y]][val]["number"];
+			}
+			if (GLOBAL.minval>GLOBAL.totals[GLOBAL.years[y]][val]["number"]){ //find the lowest death value
+				GLOBAL.minval=GLOBAL.totals[GLOBAL.years[y]][val]["number"];
+			}
+		}
 	}
-	if (GLOBAL.minval>GLOBAL.totals[GLOBAL.years[y]][val]["number"]){ //find the lowest death value
-		GLOBAL.minval=GLOBAL.totals[GLOBAL.years[y]][val]["number"];
+
+	var svg = d3.select("#viz-age");
+	var vis = svg,
+	WIDTH = 1000,
+	HEIGHT = 500,
+	MARGINS = {
+	top: 20,
+	right: 20,
+	bottom: 20,
+	left: 100
+	},
+	xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, 24]),
+	yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([GLOBAL.minval-100, GLOBAL.maxval+100]),
+	xAxis = d3.svg.axis()
+	.scale(xScale),
+	yAxis = d3.svg.axis()
+	.scale(yScale)
+	.orient("left");
+
+	var line = d3.svg.line()
+	.x(function(d) {
+		return xScale(d.month);
+	})
+	.y(function(d) {
+		return yScale(d.number);
+	});
+
+	var colors = ["blue","red","green","black","blue","gray"];
+	//for (total in GLOBAL.totals){console.log(GLOBAL.totals[total]);}
+	for (total in GLOBAL.totals){ //err we are going to try for looping through
+		var simpler=[]; //the other array of GLOBAL.total had the month in it for easier updating...
+		simpler.push(GLOBAL.totals[total]);
+		// GLOBAL.totals[total].forEach(function(r){
+		// simpler.push(r); //we'll just use this :')
+		// })
+		var tryagain=[];
+		for (each in simpler[0]){
+			tryagain.push(simpler[0][each]);
+		}
+		vis.append("svg:g")
+		.attr("class", "x axis")
+		.attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
+		.call(xAxis);
+		vis.append("svg:g")
+		.attr("class", "y axis")
+		.attr("transform", "translate(" + (MARGINS.left) + ",0)")
+		.call(yAxis);
+		vis.append("svg:path")
+		.attr("d", line(tryagain))
+		.attr("stroke-width", "2")
+		.attr("stroke","blue");
 	}
-}
-}
-var svg = d3.select("#viz-age");
-
-var vis = svg,
-WIDTH = 1000,
-HEIGHT = 500,
-MARGINS = {
-top: 20,
-right: 20,
-bottom: 20,
-left: 100
-},
-xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, 24]),
-yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([GLOBAL.minval-100, GLOBAL.maxval+100]),
-xAxis = d3.svg.axis()
-.scale(xScale),
-yAxis = d3.svg.axis()
-.scale(yScale)
-.orient("left");
-
-
-
-var line = d3.svg.line()
-.x(function(d) {
-return xScale(d.month);
-})
-.y(function(d) {
-
-return yScale(d.number);
-});
-
-var colors = ["blue","red","green","black","blue","gray"];
-//for (total in GLOBAL.totals){console.log(GLOBAL.totals[total]);}
-for (total in GLOBAL.totals){ //err we are going to try for looping through
-
-var simpler=[]; //the other array of GLOBAL.total had the month in it for easier updating...
-
-simpler.push(GLOBAL.totals[total]);
-// GLOBAL.totals[total].forEach(function(r){
-// simpler.push(r); //we'll just use this :')
-// })
-
-
-var tryagain=[];
-
-for (each in simpler[0]){
-	tryagain.push(simpler[0][each]);
-}
-//console.log("tryagain: "+tryagain);
-//console.log(simpler[0]);
-vis.append("svg:g")
-.attr("class", "x axis")
-.attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
-.call(xAxis);
-vis.append("svg:g")
-.attr("class", "y axis")
-.attr("transform", "translate(" + (MARGINS.left) + ",0)")
-.call(yAxis);
-vis.append("svg:path")
-	.attr("d", line(tryagain))
-	   .attr("stroke-width", "2")
-	   .attr("stroke","blue");
-
-}
-
-d3.selectAll(".axis").attr("stroke","black");
+	d3.selectAll(".axis").attr("stroke","black");
 }
 
 
