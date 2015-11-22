@@ -4,4 +4,6 @@ makedb.py
 *~
 mortality.db*
 dev/
+bottle.py
+bottle.pyc
 

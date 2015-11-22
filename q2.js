@@ -90,6 +90,7 @@ svg.selectAll("*").remove(); //clears the viz
 
 GLOBAL.totals={"2003":[],"2008":[],"2013":[]}; //reset
 
+// Karina: this code needs to be re-commented if you're going to re-use it
 // Fill the list up with all countries that are checked
 for (cause_index in GLOBAL.cause)
 {
