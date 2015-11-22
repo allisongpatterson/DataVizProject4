@@ -11,7 +11,8 @@ var GLOBAL={"data":"",
 "years":[2003, 2008, 2013],
 "selected_causes":[],
 "totals":{"2003":[],"2008":[],"2013":[]},
-"maxval":0}; //currently totalval is used so that you can turn it into a percent. 
+"maxval":0,
+"minval":100000000}; //currently totalval is used so that you can turn it into a percent. 
 
 
 function run () {
@@ -68,17 +69,13 @@ GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":r["number"]}; // 
 
 });
 
-GLOBAL.maxval=0;
-for (val in GLOBAL.totals["2003"]){
-	if (GLOBAL.maxval<GLOBAL.totals["2003"][val]["number"]){
-		GLOBAL.maxval=GLOBAL.totals["2003"][val]["number"];
-	}
-}
+
 return GLOBAL.totals
 }
 
 function updateCausesView(){
 createCausesView(sum_Total_Months());
+
 }
 
 /* Checks whenever a checkbox has been clicked
@@ -117,6 +114,20 @@ updateCausesView();
 *
 */
 function createCausesView() {
+	GLOBAL.maxval=0; //reset
+GLOBAL.minval=100000000;
+console.log("this part");
+for (y in GLOBAL.years){ //for each year
+for (val in GLOBAL.totals[GLOBAL.years[y]]){ //for each month in each year
+	console.log("comparing: "+GLOBAL.totals[GLOBAL.years[y]][val]["number"]);
+	if (GLOBAL.maxval<GLOBAL.totals[GLOBAL.years[y]][val]["number"]){ //find the highest death value
+		GLOBAL.maxval=GLOBAL.totals[GLOBAL.years[y]][val]["number"];
+	}
+	if (GLOBAL.minval>GLOBAL.totals[GLOBAL.years[y]][val]["number"]){ //find the lowest death value
+		GLOBAL.minval=GLOBAL.totals[GLOBAL.years[y]][val]["number"];
+	}
+}
+}
 var svg = d3.select("#viz-age");
 
 var vis = svg,
@@ -129,7 +140,7 @@ bottom: 20,
 left: 100
 },
 xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, 24]),
-yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([0, GLOBAL.maxval]),
+yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([GLOBAL.minval-100, GLOBAL.maxval+100]),
 xAxis = d3.svg.axis()
 .scale(xScale),
 yAxis = d3.svg.axis()
@@ -148,11 +159,11 @@ console.log(d.number);
 return yScale(d.number);
 });
 
-var colors = ["blue","red","yellow","green","black","blue","gray"];
+var colors = ["blue","red","green","black","blue","gray"];
 for (total in GLOBAL.totals){console.log(GLOBAL.totals[total]);}
 for (total in GLOBAL.totals){ //err we are going to try for looping through
 
-var simpler=[]; //the other array of GLOBALS.total had the month in it for easier updating...
+var simpler=[]; //the other array of GLOBAL.total had the month in it for easier updating...
 
 simpler.push(GLOBAL.totals[total]);
 // GLOBAL.totals[total].forEach(function(r){
