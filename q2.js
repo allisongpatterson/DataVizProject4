@@ -16,61 +16,48 @@ var GLOBAL={"data":"",
 
 
 function run () {
-var svg = d3.selectAll("svg");
-svg.append("text")
-.attr("class","loading")
-.attr("x",+svg.attr("width")/2)
-.attr("y",+svg.attr("height")/2)
-.attr("dy","0.35em")
-.style("text-anchor","middle")
-.text("loading data...");
-getData(function(data) {
-GLOBAL.data = data["data"];
-GLOBAL.cause=CAUSE;
-GLOBAL.months = data["month"];
-GLOBAL.years = data["year"];
-updateCausesView();
-});
+	var svg = d3.selectAll("svg");
+	svg.append("text")
+	.attr("class","loading")
+	.attr("x",+svg.attr("width")/2)
+	.attr("y",+svg.attr("height")/2)
+	.attr("dy","0.35em")
+	.style("text-anchor","middle")
+	.text("loading data...");
+	getData(function(data) {
+	GLOBAL.data = data["data"];
+	GLOBAL.cause=CAUSE;
+	GLOBAL.months = data["month"];
+	GLOBAL.years = data["year"];
+	updateCausesView();
+	});
 }
+
 /*
 * Summing up totals from the causes. Run the checkChanged before running sum_Total_Months.
 */
-function sum_Total_Months()
-{
-GLOBAL.data.forEach(function(r) //for each row in the data
-{
-//console.log(r.cause);
-if (GLOBAL.selected_causes.length==0){ //take it as taking the totals of all causes
-if (r.month in GLOBAL.totals[r.year]){ //if it is, just update
 
-GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":GLOBAL.totals[r.year][r["month"]]["number"]+r["number"]}
+function sum_Total_Months() {
+	GLOBAL.data.forEach(function(r) //for each row in the data
+	{
+	if (GLOBAL.selected_causes.length==0){ //take it as taking the totals of all causes
+		if (r.month in GLOBAL.totals[r.year]){ //if it is, just update
+			GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":GLOBAL.totals[r.year][r["month"]]["number"]+r["number"]}
+		} else { //if that month isn't in the total
+			GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":r["number"]}; // month: number
+		}
 
-} else { //if that month isn't in the total
-GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":r["number"]}; // month: number
-
-}
-
-} else {
-// If the country of the data row is the desired country
-if (GLOBAL.selected_causes.indexOf(r.cause.toString())!=-1) //if it is in selected countries
-{
-//	console.log(r.cause);
-if (r.month in GLOBAL.totals[r.year]){ //if it is, just update
-
-GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":GLOBAL.totals[r.year][r["month"]]["number"]+r["number"]}
-
-} else { //if that month isn't in the total
-GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":r["number"]}; // month: number
-
-}
-
-}
-}
-
-});
-
-
-return GLOBAL.totals
+	} else { 
+		if (GLOBAL.selected_causes.indexOf(r.cause.toString())!=-1){
+			if (r.month in GLOBAL.totals[r.year]){
+				GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":GLOBAL.totals[r.year][r["month"]]["number"]+r["number"]}
+			} else { //if that month isn't in the total
+				GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":r["number"]}; // month: number
+			}
+		}
+	}
+	});
+	return GLOBAL.totals
 }
 
 function updateCausesView(){
