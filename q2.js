@@ -39,7 +39,7 @@ function sum_Total_Months()
 {
 GLOBAL.data.forEach(function(r) //for each row in the data
 {
-console.log(r.cause);
+//console.log(r.cause);
 if (GLOBAL.selected_causes.length==0){ //take it as taking the totals of all causes
 if (r.month in GLOBAL.totals[r.year]){ //if it is, just update
 
@@ -54,7 +54,7 @@ GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":r["number"]}; // 
 // If the country of the data row is the desired country
 if (GLOBAL.selected_causes.indexOf(r.cause.toString())!=-1) //if it is in selected countries
 {
-	console.log(r.cause);
+//	console.log(r.cause);
 if (r.month in GLOBAL.totals[r.year]){ //if it is, just update
 
 GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":GLOBAL.totals[r.year][r["month"]]["number"]+r["number"]}
@@ -83,7 +83,7 @@ createCausesView(sum_Total_Months());
 */
 function check_changed()
 {
-console.log("present");
+//console.log("present");
     var svg = d3.select("#viz-age");
 svg.selectAll("*").remove(); //clears the viz
 // Reset the list of selected countries
@@ -94,7 +94,7 @@ GLOBAL.totals={"2003":[],"2008":[],"2013":[]}; //reset
 for (cause_index in GLOBAL.cause)
 {
 var cause = GLOBAL.cause[cause_index]; //this gets the string version
-console.log("cause is"+cause);
+
 if (document.getElementById(cause_index).checked === true && GLOBAL.selected_causes.indexOf(cause_index)==-1) //if checked and not in list
 {
 GLOBAL.selected_causes.push(cause_index);
@@ -116,10 +116,10 @@ updateCausesView();
 function createCausesView() {
 	GLOBAL.maxval=0; //reset
 GLOBAL.minval=100000000;
-console.log("this part");
+
 for (y in GLOBAL.years){ //for each year
 for (val in GLOBAL.totals[GLOBAL.years[y]]){ //for each month in each year
-	console.log("comparing: "+GLOBAL.totals[GLOBAL.years[y]][val]["number"]);
+	
 	if (GLOBAL.maxval<GLOBAL.totals[GLOBAL.years[y]][val]["number"]){ //find the highest death value
 		GLOBAL.maxval=GLOBAL.totals[GLOBAL.years[y]][val]["number"];
 	}
@@ -154,13 +154,12 @@ var line = d3.svg.line()
 return xScale(d.month);
 })
 .y(function(d) {
-console.log(d.number);
-//var value=d.number/GLOBAL.totalval*100;
+
 return yScale(d.number);
 });
 
 var colors = ["blue","red","green","black","blue","gray"];
-for (total in GLOBAL.totals){console.log(GLOBAL.totals[total]);}
+//for (total in GLOBAL.totals){console.log(GLOBAL.totals[total]);}
 for (total in GLOBAL.totals){ //err we are going to try for looping through
 
 var simpler=[]; //the other array of GLOBAL.total had the month in it for easier updating...
@@ -176,8 +175,8 @@ var tryagain=[];
 for (each in simpler[0]){
 	tryagain.push(simpler[0][each]);
 }
-console.log("tryagain: "+tryagain);
-console.log(simpler[0]);
+//console.log("tryagain: "+tryagain);
+//console.log(simpler[0]);
 vis.append("svg:g")
 .attr("class", "x axis")
 .attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
