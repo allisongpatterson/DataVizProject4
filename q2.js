@@ -166,14 +166,15 @@ function createCausesView() {
 * Convert a cause code to text
 *
 */
-function causeText (i) {
-var index = CAUSE[i].indexOf("(");
-if (index < 0) {
-return CAUSE[i];
-} else {
-return CAUSE[i].slice(0,index-1);
+function causeText(i) {
+	var index = CAUSE[i].indexOf("(");
+	if (index < 0){
+		return CAUSE[i];
+	} else {
+		return CAUSE[i].slice(0,index-1);
+	}
 }
-}
+
 var CAUSE = {
 "1":"Tuberculosis (A16-A19)",
 "2":"Syphilis (A50-A53)",
@@ -221,18 +222,17 @@ var CAUSE = {
 
 /*
 * Pulls the data
-*
 */
-function getData (f) {
-d3.json("data",function(error,data) {
-if (error) {
-d3.selectAll(".loading").remove();
-console.log(error);
-} else {
-d3.selectAll(".loading").remove();
 
-console.log(" data =", data);
-f(data);
-}
-});
+function getData(f) {
+	d3.json("data",function(error,data) {
+		if (error){
+			d3.selectAll(".loading").remove();
+			console.log(error);
+		} else {
+			d3.selectAll(".loading").remove();
+			console.log(" data =", data);
+			f(data);
+		}
+	});
 }
