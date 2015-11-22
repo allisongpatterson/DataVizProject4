@@ -15,7 +15,7 @@ var GLOBAL={"data":"",
 "minval":100000000}; //currently totalval is used so that you can turn it into a percent. 
 
 
-function run () {
+function run() {
 	var svg = d3.selectAll("svg");
 	svg.append("text")
 	.attr("class","loading")
@@ -60,40 +60,32 @@ function sum_Total_Months() {
 	return GLOBAL.totals
 }
 
-function updateCausesView(){
-createCausesView(sum_Total_Months());
-
+function updateCausesView() {
+	createCausesView(sum_Total_Months());
 }
 
-/* Checks whenever a checkbox has been clicked
+/* 
+* checks whenever a checkbox has been clicked
 * and updates the viz accordingly to add or remove the cause from the totals
 */
-function check_changed()
-{
-//console.log("present");
+
+function check_changed() {
     var svg = d3.select("#viz-age");
-svg.selectAll("*").remove(); //clears the viz
-// Reset the list of selected countries
+	svg.selectAll("*").remove(); //clears the viz
+	GLOBAL.totals={"2003":[],"2008":[],"2013":[]}; //reset
 
-GLOBAL.totals={"2003":[],"2008":[],"2013":[]}; //reset
-
-// Karina: this code needs to be re-commented if you're going to re-use it
-// Fill the list up with all countries that are checked
-for (cause_index in GLOBAL.cause)
-{
-var cause = GLOBAL.cause[cause_index]; //this gets the string version
-
-if (document.getElementById(cause_index).checked === true && GLOBAL.selected_causes.indexOf(cause_index)==-1) //if checked and not in list
-{
-GLOBAL.selected_causes.push(cause_index);
-} else { //if it has already been checked before
-	var index = GLOBAL.selected_causes.indexOf(cause_index);
-	if (index>-1){
-	GLOBAL.selected_causes.splice(index,1);}
-}
-}
-// Update the visualization
-updateCausesView();
+	for (cause_index in GLOBAL.cause){
+		var cause = GLOBAL.cause[cause_index]; //this gets the string version
+		if (document.getElementById(cause_index).checked === true && GLOBAL.selected_causes.indexOf(cause_index)==-1){ //if checked and not in list
+			GLOBAL.selected_causes.push(cause_index);
+		} else { //if it has already been checked before
+			var index = GLOBAL.selected_causes.indexOf(cause_index);
+			if (index>-1){
+				GLOBAL.selected_causes.splice(index,1);}
+		}
+	}
+	// Update the visualization
+	updateCausesView();
 }
 
 /*
