@@ -33,15 +33,7 @@ def pullDataQ1 ():
     cur = conn.cursor()
 
     try: 
-        # cur.execute("""SELECT year, Cause_Recode_39, sex, age_value, SUM(1) as total 
-        #                FROM mortality
-        #                GROUP BY year, Cause_Recode_39, sex;""")
-        # data = [{"year":int(year),
-        #          "cause":int(cause),
-        #          "gender":sex,
-        #          "age":int(age),
-        #          "total":total} for (year, cause, sex, age, total,) in  cur.fetchall()]
-       
+     
         #####For each cause of death in the Cause_Recode_39 column, 
         #####the average age of the persons that died from that cause, 
         #####for each year.
@@ -84,39 +76,23 @@ def pullDataQ2 ():
     try: 
 
         #select Month_Of_Death, count(Month_Of_Death),year, Cause_Recode_39 from mortality group by Cause_Recode_39, Month_Of_Death, year order by Month_Of_Death;
-        cur.execute("""SELECT Month_Of_Death, count(Month_Of_Death),Cause_Recode_39, year
+        cur.execute("""SELECT Month_Of_Death, count(Month_Of_Death),Cause_Recode_39, year, age_value
             FROM mortality 
-            GROUP BY Cause_Recode_39, Month_Of_Death, year 
+            GROUP BY Cause_Recode_39, Month_Of_Death, year, age_value
             ORDER BY Month_Of_Death;""")
 
         data = [{"month":int(month[1:]),
                  "number":int(number),
                  "cause": int(cause),
-                 "year":int(year)} for (month, number, cause, year,) in  cur.fetchall()]
+                 "year":int(year),
+                 "age": int(age)} for (month, number, cause, year,age,) in  cur.fetchall()]
        
         conn.close()
 
         month = list(set([int(r["month"]) for r in data]))
         year = list(set([r["year"] for r in data]))
         cause = list(set([r["cause"] for r in data]))
-        # data2=[];
-        # #consolidate the dictionary on the months
-        # element=0;
-        # for n in data:
-        #     months = list(set([int(r["month"]) for r in data2]))
-        #     values = list(set([int(r["number"]) for r in data2]))
-        #     print values
-        #     if (n["month"] not in months):
-
-        #         data2.insert(element,n) #at this index
-        #         element+=1
-        #     else:
-        #         print "updating"
-        #         print n
-        #         currentDict=data2[n["month"]-1]
-        #         currentDict["number"]+=n["number"]
-        #         data2[n["month"]-1]=currentDict
-
+      
         return {"data":data, "month":month, "year":year, "causes":cause}
 
     except: 
