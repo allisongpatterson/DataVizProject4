@@ -244,11 +244,6 @@ function createCausesView() {
 	    .text("months in a year");
 
 	
-legend = vis.append("g")
-  .attr("class","legend")
-  .attr("transform","translate(50,30)")
-  .style("font-size","12px")
-  .call(d3.legend);
 
 	var colorIndex=0;
 	for (total in GLOBAL.totals){ //err we are going to try for looping through
@@ -264,6 +259,7 @@ legend = vis.append("g")
 		.attr("d", line(tryagain))
 		.attr("stroke-width", "2")
 		.attr("stroke",GLOBAL.colors[colorIndex]);
+		
 		
 		colorIndex++;
 	}
