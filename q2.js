@@ -42,7 +42,9 @@ function run() {
 function sum_Total_Months() {
 	GLOBAL.data.forEach(function(r) //for each row in the data
 	{
-
+		//if the year you are looking at rn is in the selected_years or if selected_years doesn't have anything in it
+		if (GLOBAL.selected_years.length==0 || (GLOBAL.years.indexOf(r.year) in GLOBAL.selected_years)){ 
+			//proceed
 //CASE 1: you have no causes, might have ages selected
 	if (GLOBAL.selected_causes.length==0){ 
 		if (GLOBAL.selected_ages.length==0){ //if no age has been selected
@@ -99,7 +101,7 @@ function sum_Total_Months() {
 
 		} //end of if you have age and cause
 	} //end of if selected cause array has values
-
+} 
 	}); //end of data for each
 	return GLOBAL.totals
 }
