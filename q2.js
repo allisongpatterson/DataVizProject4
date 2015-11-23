@@ -6,193 +6,266 @@
 
 window.addEventListener("load",run);
 var GLOBAL={"data":"",
-"causes":CAUSE,
-"months":[1,2,3,4,5,6,7,8,9,10,11,12],
-"years":[2003, 2008, 2013],
-"selected_causes":[],
-"totals":{"2003":[],"2008":[],"2013":[]},
-"maxval":0,
-"minval":100000000}; //currently totalval is used so that you can turn it into a percent. 
+	"causes":CAUSE,
+	"years":["2003","2008","2013"], //apparently number arrays do not keep order.
+	"ages":["5","12","18","29","39","49","59","69","79","89","99","100"],
+	"selected_causes":[],
+	"selected_ages":[],
+	"selected_years":[],
+	"totals":{"2003":[],"2008":[],"2013":[]},
+	"maxval":0,
+	"minval":100000000,
+	"colors":["blue","red","green"]}; //currently totalval is used so that you can turn it into a percent. 
 
 
-function run () {
-var svg = d3.selectAll("svg");
-svg.append("text")
-.attr("class","loading")
-.attr("x",+svg.attr("width")/2)
-.attr("y",+svg.attr("height")/2)
-.attr("dy","0.35em")
-.style("text-anchor","middle")
-.text("loading data...");
-getData(function(data) {
-GLOBAL.data = data["data"];
-GLOBAL.cause=CAUSE;
-GLOBAL.months = data["month"];
-GLOBAL.years = data["year"];
-updateCausesView();
-});
+function run() {
+	var svg = d3.selectAll("svg");
+	svg.append("text")
+		.attr("class","loading")
+		.attr("x",+svg.attr("width")/2)
+		.attr("y",+svg.attr("height")/2)
+		.attr("dy","0.35em")
+		.style("text-anchor","middle")
+		.text("loading data...");
+	getData(function(data) {
+	GLOBAL.data = data["data"];
+	GLOBAL.cause=CAUSE;
+	GLOBAL.years = data["year"];
+	updateCausesView();
+	});
 }
+
 /*
 * Summing up totals from the causes. Run the checkChanged before running sum_Total_Months.
 */
-function sum_Total_Months()
-{
-GLOBAL.data.forEach(function(r) //for each row in the data
-{
-//console.log(r.cause);
-if (GLOBAL.selected_causes.length==0){ //take it as taking the totals of all causes
-if (r.month in GLOBAL.totals[r.year]){ //if it is, just update
 
-GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":GLOBAL.totals[r.year][r["month"]]["number"]+r["number"]}
+function sum_Total_Months() {
+	GLOBAL.data.forEach(function(r) //for each row in the data
+	{
+		//if the year you are looking at rn is in the selected_years or if selected_years doesn't have anything in it
+		if (GLOBAL.selected_years.length==0 || (GLOBAL.years.indexOf(r.year) in GLOBAL.selected_years)){ 
+			//proceed
+//CASE 1: you have no causes, might have ages selected
+	if (GLOBAL.selected_causes.length==0){ 
+		if (GLOBAL.selected_ages.length==0){ //if no age has been selected
+				if (r.month in GLOBAL.totals[r.year]){ //if it is, just update with all
+					GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":GLOBAL.totals[r.year][r["month"]]["number"]+r["number"]}
+				} else { //if that month isn't in the total
+					GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":r["number"]}; // month: number
+				}
+		} else if (GLOBAL.selected_ages.length>0){ //if age has been selected with no causes, just filter for age
+			var box=-1; 
+			for (n in GLOBAL.ages){
+				var age= parseInt(GLOBAL.ages[n]);
+				if (r.age<parseInt(GLOBAL.ages[n])){
+					box=n;
+					break;
+				} 
+			} //find out which box the age belongs to. Less than or equal to the num
+			if (GLOBAL.selected_ages.indexOf(box)!=-1){ //if current row is in the selected ages
+				if (r.month in GLOBAL.totals[r.year]){
+					GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":GLOBAL.totals[r.year][r["month"]]["number"]+r["number"]}
+				} else { //if that month isn't in the total
+					GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":r["number"]}; // month: number
+				}
+			}
+		}
 
-} else { //if that month isn't in the total
-GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":r["number"]}; // month: number
+//CASE 2: you have causes, and might have ages selected
+	} else if (GLOBAL.selected_causes.length>0) { //if you selected for a cause
+		if (GLOBAL.selected_ages.length==0){
+			if (GLOBAL.selected_causes.indexOf(r.cause.toString())!=-1){ //if there is no age selected, then just add for causes
+				if (r.month in GLOBAL.totals[r.year]){
+					GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":GLOBAL.totals[r.year][r["month"]]["number"]+r["number"]}
+				} else { //if that month isn't in the total
+					GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":r["number"]}; // month: number
+				}
+			}
+		} else { //ok you have an age, now find the age and check groups
+			var box=-1; 
+			//find out which box the age belongs to. Less than or equal to the num
+			for (n in GLOBAL.ages){
+				if (r.age<parseInt(GLOBAL.ages[n])){
+					box=n;
+					break;
+				} 
+			} 
+//if current row is in BOTH the selected groups, then add to total 
+			if (GLOBAL.selected_ages.indexOf(box)!=-1 && GLOBAL.selected_causes.indexOf(r.cause.toString())!=-1){ 
+				if (r.month in GLOBAL.totals[r.year]){
+					GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":GLOBAL.totals[r.year][r["month"]]["number"]+r["number"]}
+				} else { //if that month isn't in the total
+					GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":r["number"]}; // month: number
+				}
+			}
 
+		} //end of if you have age and cause
+	} //end of if selected cause array has values
+} 
+	}); //end of data for each
+	return GLOBAL.totals
 }
 
-} else {
-// If the country of the data row is the desired country
-if (GLOBAL.selected_causes.indexOf(r.cause.toString())!=-1) //if it is in selected countries
-{
-//	console.log(r.cause);
-if (r.month in GLOBAL.totals[r.year]){ //if it is, just update
-
-GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":GLOBAL.totals[r.year][r["month"]]["number"]+r["number"]}
-
-} else { //if that month isn't in the total
-GLOBAL.totals[r.year][r["month"]]={"month":r["month"],"number":r["number"]}; // month: number
-
+function updateCausesView() {
+	createCausesView(sum_Total_Months());
 }
 
-}
-}
-
-});
-
-
-return GLOBAL.totals
-}
-
-function updateCausesView(){
-createCausesView(sum_Total_Months());
-
-}
-
-/* Checks whenever a checkbox has been clicked
+/* 
+* checks whenever a checkbox has been clicked
 * and updates the viz accordingly to add or remove the cause from the totals
 */
-function check_changed()
-{
-//console.log("present");
-    var svg = d3.select("#viz-age");
-svg.selectAll("*").remove(); //clears the viz
-// Reset the list of selected countries
 
-GLOBAL.totals={"2003":[],"2008":[],"2013":[]}; //reset
+function check_changed() { 
 
-// Fill the list up with all countries that are checked
-for (cause_index in GLOBAL.cause)
-{
-var cause = GLOBAL.cause[cause_index]; //this gets the string version
+	//Clear your viz
+    var svg = d3.select("#viz-monthly-mortality");
+	svg.selectAll("*").remove(); //clears the viz
+	GLOBAL.totals={"2003":[],"2008":[],"2013":[]}; //reset
 
-if (document.getElementById(cause_index).checked === true && GLOBAL.selected_causes.indexOf(cause_index)==-1) //if checked and not in list
-{
-GLOBAL.selected_causes.push(cause_index);
-} else { //if it has already been checked before
-	var index = GLOBAL.selected_causes.indexOf(cause_index);
-	if (index>-1){
-	GLOBAL.selected_causes.splice(index,1);}
-}
-}
-// Update the visualization
-updateCausesView();
+//going through all the ids associated with the causes
+	for (cause_index in GLOBAL.cause){
+		var cause = GLOBAL.cause[cause_index]; //this gets the string version
+		if (document.getElementById(cause_index).checked === true && GLOBAL.selected_causes.indexOf(cause_index)===-1){ //if checked and not in list
+			GLOBAL.selected_causes.push(cause_index);
+		} else if (document.getElementById(cause_index).checked === false){ //if it has already been checked before
+			var index = GLOBAL.selected_causes.indexOf(cause_index);
+			if (index>-1){
+				GLOBAL.selected_causes.splice(index,1);
+			}
+		}
+	}
+
+//going through all the ages selectors
+	for (age_index in GLOBAL.ages){
+		
+		var age = "age"+(age_index).toString();
+		if (document.getElementById(age).checked === true && GLOBAL.selected_ages.indexOf(age_index)===-1){
+			GLOBAL.selected_ages.push(age_index);
+		} else  if (document.getElementById(age).checked===false){
+			var index = GLOBAL.selected_ages.indexOf(age_index);
+			if (index>-1){
+				GLOBAL.selected_ages.splice(index,1);
+			}
+		}
+	}
+    
+	for (year_index in GLOBAL.years){
+		var year=GLOBAL.years[year_index];
+		if (document.getElementById(year).checked === true && GLOBAL.selected_years.indexOf(year_index)===-1){
+			GLOBAL.selected_years.push(year_index);
+		} else  if (document.getElementById(year).checked ===false){
+			var index = GLOBAL.selected_years.indexOf(year_index);
+			if (index>-1){
+				GLOBAL.selected_years.splice(index,1);
+			}
+		}
+	}
+	// Update the visualization
+	updateCausesView();
 }
 
 /*
-* Create a simple visual representation
-* of the data
-*
+* Create a simple visual representation of the data
 */
+
 function createCausesView() {
 	GLOBAL.maxval=0; //reset
-GLOBAL.minval=100000000;
+	GLOBAL.minval=100000000;
 
-for (y in GLOBAL.years){ //for each year
-for (val in GLOBAL.totals[GLOBAL.years[y]]){ //for each month in each year
+	for (y in GLOBAL.years){ //for each year
+		for (val in GLOBAL.totals[GLOBAL.years[y]]){ //for each month in each year
+			if (GLOBAL.maxval<GLOBAL.totals[GLOBAL.years[y]][val]["number"]){ //find the highest death value
+				GLOBAL.maxval=GLOBAL.totals[GLOBAL.years[y]][val]["number"];
+			}
+			if (GLOBAL.minval>GLOBAL.totals[GLOBAL.years[y]][val]["number"]){ //find the lowest death value
+				GLOBAL.minval=GLOBAL.totals[GLOBAL.years[y]][val]["number"];
+			}
+		}
+	}
+
+	var svg = d3.select("#viz-monthly-mortality");
+	var vis = svg,
+	WIDTH = 950,
+	HEIGHT = 450,
+	MARGINS = {
+	top: 20,
+	right: 20,
+	bottom: 20,
+	left: 100
+	},
+	xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, 24]),
+	yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([GLOBAL.minval-100, GLOBAL.maxval+100]),
+	xAxis = d3.svg.axis()
+	.scale(xScale),
+	yAxis = d3.svg.axis()
+	.scale(yScale)
+	.orient("left");
+
+	var filterstring="further selected: ";
+	for (y in GLOBAL.selected_ages){
+		filterstring+="<li>"+AGE_VALUES[parseInt(GLOBAL.selected_ages[y])];
+	}
+	for (x in GLOBAL.selected_causes){
+		filterstring+="<li>"+CAUSE[parseInt(GLOBAL.selected_causes[x])];
+	}
+	document.getElementById("filter-items").innerHTML=filterstring;
+
+
+	var line = d3.svg.line()
+	.x(function(d) {
+		return xScale(d.month);
+	})
+	.y(function(d) {
+		return yScale(d.number);
+	});
+	vis.append("svg:g")
+		.attr("class", "x axis")
+		.attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
+		.call(xAxis);
+		vis.append("svg:g")
+		.attr("class", "y axis")
+		.attr("transform", "translate(" + (MARGINS.left) + ",0)")
+		.call(yAxis);
+
+
+
+	vis.append("text")
+	    .attr("class", "y label")
+	    .attr("text-anchor", "end")
+	    .attr("y", 6)
+	    .attr("dy", ".75em")
+	    .attr("transform", "rotate(-90)")
+	    .text("# of deaths");
+
+
+	vis.append("text")
+	    .attr("class", "x label")
+	    .attr("text-anchor", "end")
+	    .attr("x", WIDTH/2)
+	    .attr("y", HEIGHT + 10)
+	    .text("months in a year");
+
 	
-	if (GLOBAL.maxval<GLOBAL.totals[GLOBAL.years[y]][val]["number"]){ //find the highest death value
-		GLOBAL.maxval=GLOBAL.totals[GLOBAL.years[y]][val]["number"];
+
+	var colorIndex=0;
+	for (total in GLOBAL.totals){ //err we are going to try for looping through
+		var simpler=[]; //the other array of GLOBAL.total had the month in it for easier updating...
+		simpler.push(GLOBAL.totals[total]);
+		
+		var tryagain=[];
+		for (each in simpler[0]){
+			tryagain.push(simpler[0][each]);
+		}
+		
+		vis.append("svg:path")
+		.attr("d", line(tryagain))
+		.attr("stroke-width", "2")
+		.attr("stroke",GLOBAL.colors[colorIndex]);
+		
+		
+		colorIndex++;
 	}
-	if (GLOBAL.minval>GLOBAL.totals[GLOBAL.years[y]][val]["number"]){ //find the lowest death value
-		GLOBAL.minval=GLOBAL.totals[GLOBAL.years[y]][val]["number"];
-	}
-}
-}
-var svg = d3.select("#viz-age");
-
-var vis = svg,
-WIDTH = 1000,
-HEIGHT = 500,
-MARGINS = {
-top: 20,
-right: 20,
-bottom: 20,
-left: 100
-},
-xScale = d3.scale.linear().range([MARGINS.left, WIDTH - MARGINS.right]).domain([1, 24]),
-yScale = d3.scale.linear().range([HEIGHT - MARGINS.top, MARGINS.bottom]).domain([GLOBAL.minval-100, GLOBAL.maxval+100]),
-xAxis = d3.svg.axis()
-.scale(xScale),
-yAxis = d3.svg.axis()
-.scale(yScale)
-.orient("left");
-
-
-
-var line = d3.svg.line()
-.x(function(d) {
-return xScale(d.month);
-})
-.y(function(d) {
-
-return yScale(d.number);
-});
-
-var colors = ["blue","red","green","black","blue","gray"];
-//for (total in GLOBAL.totals){console.log(GLOBAL.totals[total]);}
-for (total in GLOBAL.totals){ //err we are going to try for looping through
-
-var simpler=[]; //the other array of GLOBAL.total had the month in it for easier updating...
-
-simpler.push(GLOBAL.totals[total]);
-// GLOBAL.totals[total].forEach(function(r){
-// simpler.push(r); //we'll just use this :')
-// })
-
-
-var tryagain=[];
-
-for (each in simpler[0]){
-	tryagain.push(simpler[0][each]);
-}
-//console.log("tryagain: "+tryagain);
-//console.log(simpler[0]);
-vis.append("svg:g")
-.attr("class", "x axis")
-.attr("transform", "translate(0," + (HEIGHT - MARGINS.bottom) + ")")
-.call(xAxis);
-vis.append("svg:g")
-.attr("class", "y axis")
-.attr("transform", "translate(" + (MARGINS.left) + ",0)")
-.call(yAxis);
-vis.append("svg:path")
-	.attr("d", line(tryagain))
-	   .attr("stroke-width", "2")
-	   .attr("stroke","blue");
-
-}
-
-d3.selectAll(".axis").attr("stroke","black");
+	d3.selectAll(".axis").attr("stroke","black");
 }
 
 
@@ -200,14 +273,15 @@ d3.selectAll(".axis").attr("stroke","black");
 * Convert a cause code to text
 *
 */
-function causeText (i) {
-var index = CAUSE[i].indexOf("(");
-if (index < 0) {
-return CAUSE[i];
-} else {
-return CAUSE[i].slice(0,index-1);
+function causeText(i) {
+	var index = CAUSE[i].indexOf("(");
+	if (index < 0){
+		return CAUSE[i];
+	} else {
+		return CAUSE[i].slice(0,index-1);
+	}
 }
-}
+
 var CAUSE = {
 "1":"Tuberculosis (A16-A19)",
 "2":"Syphilis (A50-A53)",
@@ -253,20 +327,34 @@ var CAUSE = {
 "42":"All other external causes (Y10-Y36,Y87.2,Y89)"
 }
 
+var AGE_VALUES={
+	"0":"1-5",
+	"1":"6-12",
+	"2":"13-18",
+	"3":"19-29",
+	"4":"30-39",
+	"5":"40-49",
+	"6":"50-59",
+	"7":"60-69",
+	"8":"70-79",
+	"9":"80-89",
+	"10":"90-99",
+	"11":"100+"
+}
+
 /*
 * Pulls the data
-*
 */
-function getData (f) {
-d3.json("data",function(error,data) {
-if (error) {
-d3.selectAll(".loading").remove();
-console.log(error);
-} else {
-d3.selectAll(".loading").remove();
 
-console.log(" data =", data);
-f(data);
-}
-});
+function getData(f) {
+	d3.json("data",function(error,data) {
+		if (error){
+			d3.selectAll(".loading").remove();
+			console.log(error);
+		} else {
+			d3.selectAll(".loading").remove();
+			console.log(" data =", data);
+			f(data);
+		}
+	});
 }
