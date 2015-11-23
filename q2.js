@@ -32,6 +32,7 @@ function run() {
 	GLOBAL.cause=CAUSE;
 	GLOBAL.years = data["year"];
 	updateCausesView();
+	createBubbleViz(data);
 	});
 }
 
@@ -118,7 +119,7 @@ function updateCausesView() {
 function check_changed() { 
 
 	//Clear your viz
-    var svg = d3.select("#viz-monthly-mortality");
+    var svg = d3.selectAll("svg");
 	svg.selectAll("*").remove(); //clears the viz
 	GLOBAL.totals={"2003":[],"2008":[],"2013":[]}; //reset
 
@@ -232,6 +233,7 @@ function createCausesView() {
 	vis.append("text")
 	    .attr("class", "y label")
 	    .attr("text-anchor", "end")
+	    .attr("x", WIDTH/-5)
 	    .attr("y", 6)
 	    .attr("dy", ".75em")
 	    .attr("transform", "rotate(-90)")
@@ -241,8 +243,9 @@ function createCausesView() {
 	vis.append("text")
 	    .attr("class", "x label")
 	    .attr("text-anchor", "end")
-	    .attr("x", WIDTH/2)
+	    .attr("x", WIDTH/3)
 	    .attr("y", HEIGHT + 10)
+	    .attr("dy", ".75em")
 	    .text("months in a year");
 
 	
@@ -266,6 +269,16 @@ function createCausesView() {
 		colorIndex++;
 	}
 	d3.selectAll(".axis").attr("stroke","black");
+}
+
+function createBubbleViz(data) {
+	var svg = d3.select("#viz-cause-bubbles");
+	svg.append("text")
+		.attr("x",+svg.attr("width")/2)
+		.attr("y",+svg.attr("height")/2)
+		.attr("dy","0.35em")
+		.style("text-anchor","middle")
+		.text("some text, yo");
 }
 
 
