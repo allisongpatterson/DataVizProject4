@@ -248,7 +248,15 @@ function createCausesView() {
     for (x in GLOBAL.selected_causes) {
         filterstring += "<li>" + CAUSE[parseInt(GLOBAL.selected_causes[x])];
     }
-    document.getElementById("filter-items").innerHTML = filterstring;
+
+    for (x in GLOBAL.selected_years) {
+        filterstring += "<li>" + GLOBAL.selected_years[x];
+    }
+    if (GLOBAL.selected_causes.length === 0 && GLOBAL.selected_ages.length === 0 && GLOBAL.selected_years.length === 0) {
+        document.getElementById("filter-items").innerHTML = "Check items that you want to see aggregate deaths/month for.";
+    } else {
+        document.getElementById("filter-items").innerHTML = filterstring;
+    }
 
 
     var line = d3.svg.line()
@@ -288,8 +296,8 @@ function createCausesView() {
 
 
     var colorIndex = 0;
-    for (total in GLOBAL.totals) { //err we are going to try for looping through
-        var simpler = []; //the other array of GLOBAL.total had the month in it for easier updating...
+    for (total in GLOBAL.totals) {
+        var simpler = [];
         simpler.push(GLOBAL.totals[total]);
 
         var tryagain = [];
