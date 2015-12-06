@@ -314,11 +314,9 @@ function createCausesView() {
     // add legend   
     var legend = vis.append("svg:g")
         .attr("class", "legend")
-        //.attr("x", w - 65)
-        //.attr("y", 50)
         .attr("height", 100)
         .attr("width", 100)
-        .attr('transform', 'translate(-20,50)')
+        .attr('transform', 'translate(20,0)')
 
 
     legend.selectAll('rect')
@@ -341,7 +339,7 @@ function createCausesView() {
         .data(GLOBAL.years)
         .enter()
         .append("text")
-        .attr("x", WIDTH - 52)
+        .attr("x", WIDTH - 50)
         .attr("y", function(d, i) {
             return i * 20 + 9;
         })
